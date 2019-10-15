@@ -1,7 +1,7 @@
 
 module RAM#(
 		parameter bitsPixel = 8,
-		parameter numPixel = 76800
+		parameter numPixel = 19200
 	)	
 	(
 		input clk,
@@ -14,7 +14,8 @@ module RAM#(
 	reg [18:0] adressW = 19'b0;
 	reg [18:0] adressR = 19'b0;
 	
-	reg r_scaleCountH = 0;
+	reg r_delay = 0;
+	reg [1:0] r_scaleCountH = 2'b0;
 	reg r_scaleCountV = 0;
 	//reg [1:0] State = 2'b0;
 	 
@@ -41,30 +42,35 @@ module RAM#(
 		end
 		
 		
-		if ((((adressR + 1) % 640) == 0) && r_scaleCountV == 0 && r_scaleCountH) begin // Primera pasada
+		if ((((adressR + 1) % 640) == 0) && r_scaleCountV == 0 && r_delay && r_scaleCountH == 3) begin // Primera pasada
 			adressR = adressR - 640;
 			//$display("adressR: %d", adressR);
 			r_scaleCountV <= 1;
 			
 		end
-		else if ((((adressR + 1 )% 640) == 0) && r_scaleCountV == 1  && r_scaleCountH/*&& adressR != 0*/) begin
+		else if ((((adressR + 1 )% 640) == 0) && r_scaleCountV == 1  && r_delay && r_scaleCountH == 3) begin
 			r_scaleCountV <= 0;
 		end
 		
 		if(adressR < numPixel) begin 
 			o_pixel <= ram[adressR];
-			//$display("ScaleH: %d", r_scaleCountH);
-			if (!r_scaleCountH) begin
-				r_scaleCountH <= 1;
+
+			if (!r_delay) begin
+				r_delay <= 1;
 			end
-			else if (r_scaleCountH) begin
-			
-				adressR <= adressR + 1;	
+			else if (r_delay && (r_scaleCountH < 3)) begin
+				r_scaleCountH <= r_scaleCountH + 1;
+				r_delay <= 0;
+			end
+			else if (r_delay && (r_scaleCountH >= 3))begin
+				r_delay <= 0;
 				r_scaleCountH <= 0;
+				adressR <= adressR + 1;
 			end
 		end
 		else begin
 			adressR <= 0;
+			r_delay <= 0;
 			r_scaleCountH <= 0;	
 		end
 		

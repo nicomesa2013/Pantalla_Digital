@@ -1,0 +1,4 @@
+NET "clkM" LOC = "C9";
+NET "rxM" LOC = "V7";
+//NET "txM" LOC = "E15";
+

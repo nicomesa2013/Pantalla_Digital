@@ -11,12 +11,15 @@ module RAM#(
 		output reg [bitsPixel - 1:0] o_pixel = 8'b0
     );
 	reg [bitsPixel - 1:0] ram [numPixel - 1:0];
-	reg [18:0] adressW = 19'b0;
-	reg [18:0] adressR = 19'b0;
+	reg [14:0] adressW = 14'b0;
+	reg [14:0] adressR = 14'b0;
 	
-	reg r_delay = 0;
+	reg r_ClkPixel = 0;
 	reg [1:0] r_scaleCountH = 2'b0;
-	reg r_scaleCountV = 0;
+	reg [9:0] r_pixelCountH = 10'b0;
+	reg [1:0] r_scaleCountV = 2'b0;
+	reg [9:0] r_pixelCountV = 10'b0;
+
 	//reg [1:0] State = 2'b0;
 	 
 	localparam inicial = "inicial.txt";
@@ -26,8 +29,38 @@ module RAM#(
 	localparam READ = 2'b10;
 	localparam TX = 2'b11;
 	*/
-	
-	 
+	always @(posedge clk)
+	begin
+		if (!r_ClkPixel) 
+			r_ClkPixel <= 1;
+		else begin
+			r_ClkPixel <= 0;
+			r_scaleCountH <= r_scaleCountH + 1;
+			if (r_scaleCountH >= 3) begin
+				r_scaleCountH <= 0;
+				r_pixelCountH <= r_pixelCountH + 1;
+				adressR <= adressR + 1;
+				if (r_pixelCountH >= 159) begin
+					r_pixelCountH <= 0;
+					r_scaleCountV <= r_scaleCountV + 1;
+					adressR <= adressR - 159;
+					if (r_scaleCountV >= 3) begin
+						r_scaleCountV <= 0;
+						r_pixelCountV <= r_pixelCountV + 1;
+						adressR <= adressR + 1;					
+						if (r_pixelCountV >= 119) begin
+							r_pixelCountV <= 0;					
+							adressR <= 0;
+						end
+					end
+				end
+			end
+		end
+	end	
+
+
+
+
 	always @(posedge clk)
 	begin
 		
@@ -40,15 +73,17 @@ module RAM#(
 			else
 				adressW <= 0;
 		end
+
+		o_pixel <= ram[adressR];
 		
 		
-		if ((((adressR + 1) % 640) == 0) && r_scaleCountV == 0 && r_delay && r_scaleCountH == 3) begin // Primera pasada
+		/*if ((((adressR + 1) % 640) == 0) && r_scaleCountV < 3 && r_delay && r_scaleCountH == 3) begin // Primera pasada
 			adressR = adressR - 640;
 			//$display("adressR: %d", adressR);
-			r_scaleCountV <= 1;
+			r_scaleCountV <= r_scaleCountV + 1;
 			
 		end
-		else if ((((adressR + 1 )% 640) == 0) && r_scaleCountV == 1  && r_delay && r_scaleCountH == 3) begin
+		else if ((((adressR + 1 )% 640) == 0) && r_scaleCountV == 3  && r_delay && r_scaleCountH == 3) begin
 			r_scaleCountV <= 0;
 		end
 		
@@ -72,7 +107,7 @@ module RAM#(
 			adressR <= 0;
 			r_delay <= 0;
 			r_scaleCountH <= 0;	
-		end
+		end*/
 		
 		
  

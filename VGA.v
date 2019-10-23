@@ -6,14 +6,8 @@ module VGA(
 //	output  [2:0]Red,
 //	output  [2:0]Green,
 //	output  [1:0]Blue,
-	/*output Red1,
+	output Red1,
 	output Red2,
-	output Red3,
-	output Green1,
-	output Green2,
-	output Green3,
-	output Blue1,
-	output Blue2,*/
 	output [7:0] o_pixel,
 	output wire HS,
 	output wire VS

@@ -25,12 +25,12 @@
 module TF_Pantalla;
 
 	// Inputs
-	reg clkM = 0;
+	reg clkM = 1;
 	reg rxM = 1;
 
 	// Outputs
 	wire [7:0] leds;
-	//wire txM;
+	//wire txM; 
 
 	// Instantiate the Unit Under Test (UUT)
 	TOP uut (
